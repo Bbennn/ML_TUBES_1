@@ -20,7 +20,7 @@ class Layer:
     def run(self, inputs: np.ndarray) -> np.ndarray:
         self.input = inputs
         self.linear_combinations = np.matmul(inputs, self.weight) + self.bias
-        outputs = self.activation(self.linear_combinations)
+        outputs = self.activation.fn(self.linear_combinations)
         return outputs
 
     def update_gradient(self, delta: np.ndarray, ancestor: "Layer"):
@@ -32,14 +32,12 @@ class Layer:
         return delta
     
     def update_weight(self, learning_rate: float):
-        self.weight += learning_rate * self.weight_gradient
-        self.bias += learning_rate * self.bias_gradient
+        self.weight -= learning_rate * self.weight_gradient
+        self.bias -= learning_rate * self.bias_gradient
 
     def info(self):
         print(self.activation)
         print(self.initializer)
         print(self.weight)
         print(self.bias)
-        print(self.gradient_weight)
-        print(self.gradient_bias)
         print(self.input)
