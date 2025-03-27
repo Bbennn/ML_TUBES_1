@@ -1,6 +1,6 @@
 from Activation import *
 from Initialization import *
-from typing import Tuple, List
+from typing import Tuple
 class Layer:
     activation: ActivationFunction
     initializer: InitializationFunction

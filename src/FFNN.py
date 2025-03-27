@@ -24,7 +24,6 @@ class FFNN:
         loss: loss function name or instance
         weight_initializer: weight initialization method or instance
         """
-        print("print model")
         if len(layer_sizes) < 2:
             raise ValueError("Network must have at least 1 layer (output)")
         
@@ -40,20 +39,17 @@ class FFNN:
             self.weight_initializer = get_initializer(weight_initializer, **weight_init_args)
         else:
             self.weight_initializer = weight_initializer
-        print("print model")
         
         if isinstance(loss, str):
             self.loss = get_loss_function(loss)
         else:
             self.loss = loss
-        print("creating model")
         self.layers = []
         self.activations = []
         for i in range(len(activations)):
             activation_func = get_activation(activations[i]) if isinstance(activations[i], str) else activations[i]
             self.layers.append(Layer((layer_sizes[i], layer_sizes[i + 1]), activation_func, self.weight_initializer))
             self.activations.append(activation_func.name())
-        print("model done")
     
     def forward(self, X: np.ndarray) -> np.ndarray:
         """Performs forward propagation."""
@@ -119,27 +115,3 @@ class FFNN:
         """Loads the model from a file."""
         with open(filename, 'rb') as file:
             return pickle.load(file)
-
-# from sklearn.datasets import fetch_openml
-# from sklearn.model_selection import train_test_split
-
-# train_samples = 1000
-
-# X, y = fetch_openml("mnist_784", version=1, return_X_y=True, as_frame=False)
-
-# def expand(i):
-#     res = [0 for _ in range(0, 10)]
-#     res[i] = 1 
-#     return res
-
-# y = [expand(int(v)) for v in y]
-# X_train, X_test, y_train, y_test = train_test_split(
-#     X, y, train_size=train_samples, test_size=10000
-# )
-
-
-# layer_size = [784, 24, 24, 24, 10, 10]
-# activations = ["sigmoid", "sigmoid", "sigmoid", "sigmoid", "softmax"]
-
-# model = FFNN(layer_sizes=layer_size, activations=activations, loss="mse", weight_initializer="normal", weight_init_args={"seed": 73})
-# model.fit(X_train, y_train, 10, 0.1, 10, True)
