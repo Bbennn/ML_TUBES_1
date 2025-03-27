@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 from typing import List, Literal
 
-from Activation import get_activation, ActivationFunction
+from Activation import get_activation, ActivationFunction, SoftmaxActivationFunction
 from Initialization import get_initializer, InitializationFunction
 from Loss import get_loss_function, ErrorFunction
 from Layer import Layer
@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 class FFNN:
-    activations: List[ActivationFunction]
+    activations: List[str]
     loss: ErrorFunction
     weight_initializer: InitializationFunction
     layers: List[Layer]
@@ -49,9 +49,11 @@ class FFNN:
         else:
             self.loss = loss
         self.layers = []
+        self.activations = []
         for i in range(len(activations)):
             activation_func = get_activation(activations[i]) if isinstance(activations[i], str) else activations[i]
             self.layers.append(Layer((layer_sizes[i], layer_sizes[i + 1]), activation_func, self.weight_initializer))
+            self.activations.append(activation_func.name())
     
     def forward(self, X: np.ndarray) -> np.ndarray:
         """Performs forward propagation."""
@@ -65,7 +67,10 @@ class FFNN:
         
         # Compute loss derivative for output layer
         delta = self.loss.dE_do(Y, O)
-        delta = delta * self.layers[-1].activation.do_ds(self.layers[-1].linear_combinations)
+        if (self.activations[-1] == "softmax"):
+            delta = delta * self.layers[-1].activation.do_ds(self.layers[-1].linear_combinations, delta)
+        else:
+            delta = delta * self.layers[-1].activation.do_ds(self.layers[-1].linear_combinations)
         self.layers[-1].weight_gradient = np.dot(self.layers[-1].input.T, delta) / self.layers[-1].input.shape[0]
         self.layers[-1].bias_gradient = np.mean(delta, axis=0)
         
@@ -195,29 +200,3 @@ class FFNN:
         """Loads the model from a file."""
         with open(filename, 'rb') as file:
             return pickle.load(file)
-
-# from sklearn.datasets import fetch_openml
-# from sklearn.model_selection import train_test_split
-
-# train_samples = 1000
-
-# X, y = fetch_openml("mnist_784", version=1, return_X_y=True, as_frame=False)
-
-# def expand(i):
-#     res = [0 for _ in range(0, 10)]
-#     res[i] = 1 
-#     return res
-
-# y = [expand(int(v)) for v in y]
-# # X = np.float128(X)
-# # print(y)
-# X_train, X_test, y_train, y_test = train_test_split(
-#     X, y, train_size=train_samples, test_size=10000
-# )
-
-
-# layer_size = [784, 24, 24, 24, 10, 10]
-# activations = ["sigmoid", "sigmoid", "sigmoid", "relu", "tanh"]
-
-# model = FFNN(layer_sizes=layer_size, activations=activations, loss="mse", weight_initializer="normal", weight_init_args={"seed": 73})
-# model.fit(X_train, y_train, 10, 0.1, 10, True)
