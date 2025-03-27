@@ -8,16 +8,16 @@ class LinearActivationFunction(ActivationFunction):
     def fn(N):
         return N
 
-    def do_ds(O):
-        return np.ones_like(O)
+    def do_ds(N):
+        return np.ones_like(N)
 
 
 class ReluActivationFunction(ActivationFunction):
     def fn(N):
         return np.maximum(0, N)
 
-    def do_ds(O):
-        return np.where(O > 0, 1, 0)
+    def do_ds(N):
+        return np.where(N > 0, 1, 0)
 
 
 class SigmoidActivationFunction(ActivationFunction):
@@ -25,7 +25,8 @@ class SigmoidActivationFunction(ActivationFunction):
         N = np.clip(N, -500, 500)
         return 1 / (1 + np.exp(-N))
 
-    def do_ds(O):
+    def do_ds(N):
+        O = SigmoidActivationFunction.fn(N)
         return O * (np.ones(O.shape) - O)
 
 
@@ -33,24 +34,29 @@ class TanhActivationFunction(ActivationFunction):
     def fn(N):
         return np.tanh(N)
 
-    def do_ds(O):
-        return 1 - np.tanh(O) ** 2
+    def do_ds(N):
+        return 1 - np.tanh(N) ** 2
 
 class SoftmaxActivationFunction(ActivationFunction):
     def fn(N):
-        N = np.clip(N, -500, 500)
-        exp_N = np.exp(N - np.max(N, axis=-1, keepdims=True))
+        N = np.clip(N, -500, 500)  # Prevent overflow
+        exp_N = np.exp(N - np.max(N, axis=-1, keepdims=True))  # Numerical stability
         return exp_N / np.sum(exp_N, axis=-1, keepdims=True)
 
-    def do_ds(O):
-        batch_size, num_classes = O.shape
+    def do_ds(N):
+        """
+        Compute the Jacobian of the softmax function w.r.t. the pre-activation values N.
+        """
+        S = SoftmaxActivationFunction.fn(N)
+        batch_size, num_classes = S.shape
         jacobian = np.zeros((batch_size, num_classes, num_classes))
 
         for i in range(batch_size):
-            softmax_i = O[i].reshape(-1, 1)  # Convert to column vector
-            jacobian[i] = np.diagflat(softmax_i) - np.dot(softmax_i, softmax_i.T)
+            s_i = S[i].reshape(-1, 1)  # Convert to column vector
+            jacobian[i] = np.diagflat(s_i) - np.dot(s_i, s_i.T)
 
         return jacobian
+
 
 ACTIVATION_FUNCTIONS = {
     "linear": LinearActivationFunction,

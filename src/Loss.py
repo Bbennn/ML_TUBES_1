@@ -41,7 +41,7 @@ LOSS_FUNCTION = {
     "cce": CategoricalCrossEntropy
 }
 
-def get_initializer(loss_name: str):
+def get_loss_function(loss_name: str):
     name = loss_name.lower()
     if name not in LOSS_FUNCTION:
         raise ValueError(f"Loss Function `{name}` not available")
