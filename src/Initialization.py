@@ -1,13 +1,13 @@
 import numpy as np
 
-class Initialization:
+class InitializationFunction:
     def init(self, shape): ...
 
-class ZeroInitialization(Initialization):
+class ZeroInitialization(InitializationFunction):
     def init(self, shape):
         return np.zeros(shape)
 
-class UniformInitialization(Initialization):
+class UniformInitialization(InitializationFunction):
     def __init__(self, lower_bound=-0.5, upper_bound=0.5, seed=None):
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
@@ -16,7 +16,7 @@ class UniformInitialization(Initialization):
     def init(self, shape):
         return self.random.uniform(self.lower_bound, self.upper_bound, shape)
 
-class NormalInitialization(Initialization):
+class NormalInitialization(InitializationFunction):
     def __init__(self, mean=0.0, std=0.05, seed=None):
         self.mean = mean
         self.std = std
@@ -25,7 +25,7 @@ class NormalInitialization(Initialization):
     def init(self, shape):
         return self.random.normal(self.mean, self.std, shape)
 
-class XavierInitialization(Initialization):
+class XavierInitialization(InitializationFunction):
     def __init__(self, seed=None):
         self.random = np.random.RandomState(seed)
     
@@ -34,7 +34,7 @@ class XavierInitialization(Initialization):
         std = np.sqrt(2.0 / (fan_in + fan_out))
         return self.random.normal(0.0, std, shape)
 
-class HeInitialization(Initialization):
+class HeInitialization(InitializationFunction):
     def __init__(self, seed=None):
         self.random = np.random.RandomState(seed)
     
