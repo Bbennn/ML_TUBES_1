@@ -81,12 +81,12 @@ class SeluActivationFunction(ActivationFunction):
     def fn(N):
         scale = 1.0507
         alpha = 1.67326
-        return np.maximum(scale*N, scale*alpha*(np.exp(N)**N-1))
+        return np.maximum(scale*N, scale*alpha*(np.exp(N)-1))
 
-    def do_ds(self,N):
+    def do_ds(N):
         scale = 1.0507
         alpha = 1.67326
-        return np.where(N > 0, scale, scale*alpha*(np.exp(N)**N))
+        return np.where(N > 0, scale, scale*alpha*(np.exp(N)))
     
     def name(): return "selu"
 
