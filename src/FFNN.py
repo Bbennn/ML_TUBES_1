@@ -2,10 +2,10 @@ import numpy as np
 import pickle
 from typing import List, Literal
 
-from Activation import get_activation, ActivationFunction, SoftmaxActivationFunction
-from Initialization import get_initializer, InitializationFunction
-from Loss import get_loss_function, ErrorFunction
-from Layer import Layer
+from .Activation import get_activation, ActivationFunction, SoftmaxActivationFunction
+from .Initialization import get_initializer, InitializationFunction
+from .Loss import get_loss_function, ErrorFunction
+from .Layer import Layer
 import matplotlib.pyplot as plt
 import networkx as nx
 
@@ -55,10 +55,10 @@ class FFNN:
             self.layers.append(Layer((layer_sizes[i], layer_sizes[i + 1]), activation_func, self.weight_initializer))
             self.activations.append(activation_func.name())
     
-    def forward(self, X: np.ndarray) -> np.ndarray:
+    def forward(self, X: np.ndarray, isValidate: bool = False) -> np.ndarray:
         """Performs forward propagation."""
         for layer in self.layers:
-            X = layer.run(X)
+            X = layer.run(X, isValidate)
         return X
     
     def backward(self, X: np.ndarray, Y: np.ndarray):
@@ -67,8 +67,13 @@ class FFNN:
         
         # Compute loss derivative for output layer
         delta = self.loss.dE_do(Y, O)
+        loss_value = self.loss.fn(Y, O)
         if (self.activations[-1] == "softmax"):
-            delta = delta * self.layers[-1].activation.do_ds(self.layers[-1].linear_combinations, delta)
+            jacobian = self.layers[-1].activation.do_ds(self.layers[-1].linear_combinations)
+            temp_delta = np.zeros_like(delta)
+            for i in range(temp_delta.shape[0]):
+                temp_delta[i] = np.dot(delta[i], jacobian[i])
+            delta = temp_delta
         else:
             delta = delta * self.layers[-1].activation.do_ds(self.layers[-1].linear_combinations)
         self.layers[-1].weight_gradient = np.dot(self.layers[-1].input.T, delta) / self.layers[-1].input.shape[0]
@@ -77,19 +82,28 @@ class FFNN:
         # Compute weight gradients and bias gradients
         for i in range(len(self.layers) - 2, -1, -1):
             delta = self.layers[i].update_gradient(delta, self.layers[i+1])
+        
+        return loss_value
     
     def update_weights(self, learning_rate: float):
         """Updates weights using the computed gradients."""
         for layer in self.layers:
             layer.update_weight(learning_rate)
     
-    def fit(self, X_train: np.ndarray, Y_train: np.ndarray, epochs: int, learning_rate: float, batch_size: int, verbose: bool = False):
+    def fit(self, X_train: np.ndarray, Y_train: np.ndarray, epochs: int, learning_rate: float, batch_size: int, verbose: bool = False, X_val: np.ndarray = None, Y_val: np.ndarray = None):
         """Trains the neural network using mini-batch gradient descent."""
         X_train = np.array(X_train)  # Ensure NumPy array
         Y_train = np.array(Y_train)  # Ensure NumPy array
         n_samples = X_train.shape[0]
+        if X_val is not None and Y_val is not None:
+            X_val = np.array(X_val)
+            Y_val = np.array(Y_val)
+        
+        train_loss_plt = []
+        val_loss_plt = []
 
         for epoch in range(epochs):
+            epoch_loss = 0.0
             indices = np.arange(n_samples)
             np.random.shuffle(indices)
 
@@ -98,12 +112,24 @@ class FFNN:
                 batch_indices = indices[start_idx:end_idx]
                 X_batch, Y_batch = X_train[batch_indices], Y_train[batch_indices]  # Use batch_indices
 
-                self.backward(X_batch, Y_batch)
+                loss = self.backward(X_batch, Y_batch)
+                epoch_loss += loss * X_batch.shape[0] / n_samples
+                
                 self.update_weights(learning_rate)
+            
+            train_loss_plt.append(epoch_loss)
+            
+            if (X_val is not None and Y_val is not None):
+                Y_val_pred = self.forward(X_val, True)
+                val_loss = self.loss.fn(Y_val, Y_val_pred)
+                val_loss_plt.append(val_loss)
+                if verbose:
+                    print(f"Epoch {epoch+1}/{epochs}, Loss: {epoch_loss:.4f}, Val_loss: {val_loss:.4f}")
 
-            if verbose and epoch % (epochs // 10) == 0:
-                loss_value = self.loss.fn(Y_train, self.forward(X_train))
-                print(f"Epoch {epoch}/{epochs}, Loss: {loss_value:.4f}")
+            elif verbose:
+                print(f"Epoch {epoch}/{epochs}, Loss: {epoch_loss:.4f}")
+        
+        return (train_loss_plt, val_loss_plt)
     
     def predict(self, X: np.ndarray) -> np.ndarray:
         """Returns the model's predictions."""

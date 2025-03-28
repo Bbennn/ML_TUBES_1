@@ -1,5 +1,5 @@
-from Activation import *
-from Initialization import *
+from .Activation import *
+from .Initialization import *
 from typing import Tuple
 class Layer:
     activation: ActivationFunction
@@ -17,7 +17,11 @@ class Layer:
         self.weight = initializer.init(shape)
         self.bias = np.zeros(shape[1])
     
-    def run(self, inputs: np.ndarray) -> np.ndarray:
+    def run(self, inputs: np.ndarray, isValidate: bool = False) -> np.ndarray:
+        if (isValidate):
+            nets = np.matmul(inputs, self.weight) + self.bias
+            outputs = self.activation.fn(nets)
+            return outputs
         self.input = inputs
         self.linear_combinations = np.matmul(inputs, self.weight) + self.bias
         outputs = self.activation.fn(self.linear_combinations)
