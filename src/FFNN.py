@@ -56,10 +56,10 @@ class FFNN:
             self.layers.append(Layer((layer_sizes[i], layer_sizes[i + 1]), activation_func, self.weight_initializer, use_rms_norm))
             self.activations.append(activation_func.name())
     
-    def forward(self, X: np.ndarray, isValidate: bool = False) -> np.ndarray:
+    def forward(self, X: np.ndarray) -> np.ndarray:
         """Performs forward propagation."""
         for layer in self.layers:
-            X = layer.run(X, isValidate)
+            X = layer.run(X)
         return X
     
     def backward(self, X: np.ndarray, Y: np.ndarray):
@@ -121,7 +121,7 @@ class FFNN:
             train_loss_plt.append(epoch_loss)
             
             if (X_val is not None and Y_val is not None):
-                Y_val_pred = self.forward(X_val, True)
+                Y_val_pred = self.forward(X_val)
                 val_loss = self.loss.fn(Y_val, Y_val_pred)
                 val_loss_plt.append(val_loss)
                 if verbose:

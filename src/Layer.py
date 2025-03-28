@@ -19,13 +19,7 @@ class Layer:
         self.bias = np.zeros(shape[1])
         self.rms_norm = RMSNorm(shape[1]) if use_rms_norm else None  # Apply RMSNorm if enabled
     
-    def run(self, inputs: np.ndarray, isValidate: bool = False) -> np.ndarray:
-        if (isValidate):
-            nets = np.matmul(inputs, self.weight) + self.bias
-            if self.rms_norm:
-                self.linear_combinations = self.rms_norm(nets)  # Apply RMSNorm
-            outputs = self.activation.fn(nets)
-            return outputs
+    def run(self, inputs: np.ndarray) -> np.ndarray:
         self.input = inputs
         self.linear_combinations = np.matmul(inputs, self.weight) + self.bias
         
