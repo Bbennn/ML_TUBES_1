@@ -32,9 +32,8 @@ class Layer:
     def update_gradient(self, delta: np.ndarray, ancestor: "Layer"):
         delta = delta.dot(ancestor.weight.T)
         delta = delta * self.activation.do_ds(self.linear_combinations)
-        batch_size = self.input.shape[0]
-        self.weight_gradient = np.dot(self.input.T, delta) / batch_size
-        self.bias_gradient = np.mean(delta, axis=0)
+        self.weight_gradient = np.dot(self.input.T, delta)
+        self.bias_gradient = np.sum(delta, axis=0)
         return delta
     
     def update_weight(self, learning_rate: float):
