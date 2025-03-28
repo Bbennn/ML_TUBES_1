@@ -52,21 +52,19 @@ class SoftmaxActivationFunction(ActivationFunction):
         exp_N = np.exp(N - np.max(N, axis=-1, keepdims=True))  # Numerical stability
         return exp_N / np.sum(exp_N, axis=-1, keepdims=True)
 
-    def do_ds(N, dE_do):
+    def do_ds(N):
         """
-        Compute the Jacobian-vector product of the softmax function.
-        Instead of returning a 3D Jacobian, it returns a 2D matrix as required.
+        Compute the Jacobian of the softmax function w.r.t. the pre-activation values N.
         """
         S = SoftmaxActivationFunction.fn(N)
-        batch_size, _ = S.shape
-        jacobian_vector_product = np.zeros_like(S)
+        batch_size, num_classes = S.shape
+        jacobian = np.zeros((batch_size, num_classes, num_classes))
 
         for i in range(batch_size):
             s_i = S[i].reshape(-1, 1)  # Convert to column vector
-            jacobian_i = np.diagflat(s_i) - np.dot(s_i, s_i.T)  # Compute the Jacobian
-            jacobian_vector_product[i] = np.dot(jacobian_i, dE_do[i])  # Multiply by dE/do
+            jacobian[i] = np.diagflat(s_i) - np.dot(s_i, s_i.T)
 
-        return (-1) * jacobian_vector_product
+        return jacobian
     
     def name(): return "softmax"
 
