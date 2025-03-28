@@ -68,13 +68,36 @@ class SoftmaxActivationFunction(ActivationFunction):
     
     def name(): return "softmax"
 
+class LeakyActivationFunction(ActivationFunction):
+    def fn(N):
+        return np.maximum(N, 0.01*N)
+
+    def do_ds(N):
+        return np.where(N > 0, 1, 0.01)
+    
+    def name(): return "leaky"
+
+class SeluActivationFunction(ActivationFunction):
+    def fn(N):
+        scale = 1.0507
+        alpha = 1.67326
+        return np.maximum(scale*N, scale*alpha*(np.exp(N)**N-1))
+
+    def do_ds(self,N):
+        scale = 1.0507
+        alpha = 1.67326
+        return np.where(N > 0, scale, scale*alpha*(np.exp(N)**N))
+    
+    def name(): return "selu"
 
 ACTIVATION_FUNCTIONS = {
     "linear": LinearActivationFunction,
     "relu": ReluActivationFunction,
     "sigmoid": SigmoidActivationFunction,
     "tanh": TanhActivationFunction,
-    "softmax": SoftmaxActivationFunction
+    "softmax": SoftmaxActivationFunction,
+    "leaky": LeakyActivationFunction,
+    "selu": SeluActivationFunction,
 }
 
 def get_activation(act_name: str):

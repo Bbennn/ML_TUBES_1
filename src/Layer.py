@@ -39,10 +39,3 @@ class Layer:
     def update_weight(self, learning_rate: float):
         self.weight -= learning_rate * self.weight_gradient
         self.bias -= learning_rate * self.bias_gradient
-
-    def info(self):
-        print(self.activation)
-        print(self.initializer)
-        print(self.weight)
-        print(self.bias)
-        print(self.input)
