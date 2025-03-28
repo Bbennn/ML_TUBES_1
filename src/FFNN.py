@@ -20,7 +20,8 @@ class FFNN:
                  activations: List[Literal["linear", "relu", "sigmoid", "tanh", "softmax"] | ActivationFunction],
                  loss: Literal["mse", "bce", "cce"] | ErrorFunction = "mse",
                  weight_initializer: Literal["zero", "uniform", "normal", "xavier", "he"] | InitializationFunction = "uniform",
-                 weight_init_args=None):
+                 weight_init_args=None,
+                 use_rms_norm: bool = False):
         """
         layer_sizes: list of neurons per layer (including input and output layers)
         activations: activation functions for each layer except input
@@ -52,7 +53,7 @@ class FFNN:
         self.activations = []
         for i in range(len(activations)):
             activation_func = get_activation(activations[i]) if isinstance(activations[i], str) else activations[i]
-            self.layers.append(Layer((layer_sizes[i], layer_sizes[i + 1]), activation_func, self.weight_initializer))
+            self.layers.append(Layer((layer_sizes[i], layer_sizes[i + 1]), activation_func, self.weight_initializer, use_rms_norm))
             self.activations.append(activation_func.name())
     
     def forward(self, X: np.ndarray, isValidate: bool = False) -> np.ndarray:

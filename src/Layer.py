@@ -1,5 +1,6 @@
 from .Activation import *
 from .Initialization import *
+from .RMSNorm import RMSNorm
 from typing import Tuple
 class Layer:
     activation: ActivationFunction
@@ -11,19 +12,26 @@ class Layer:
     input: np.ndarray
     linear_combinations: np.ndarray
 
-    def __init__(self, shape: Tuple[int,int], activation: ActivationFunction, initializer: InitializationFunction):
+    def __init__(self, shape: Tuple[int,int], activation: ActivationFunction, initializer: InitializationFunction, use_rms_norm: bool = False):
         self.activation = activation
         self.initializer = initializer
         self.weight = initializer.init(shape)
         self.bias = np.zeros(shape[1])
+        self.rms_norm = RMSNorm(shape[1]) if use_rms_norm else None  # Apply RMSNorm if enabled
     
     def run(self, inputs: np.ndarray, isValidate: bool = False) -> np.ndarray:
         if (isValidate):
             nets = np.matmul(inputs, self.weight) + self.bias
+            if self.rms_norm:
+                self.linear_combinations = self.rms_norm(nets)  # Apply RMSNorm
             outputs = self.activation.fn(nets)
             return outputs
         self.input = inputs
         self.linear_combinations = np.matmul(inputs, self.weight) + self.bias
+        
+        if self.rms_norm:
+            self.linear_combinations = self.rms_norm(self.linear_combinations)  # Apply RMSNorm
+
         outputs = self.activation.fn(self.linear_combinations)
         return outputs
 
