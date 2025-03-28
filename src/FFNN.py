@@ -156,7 +156,7 @@ class FFNN:
             plt.figure()  
             data = self.layers[idx].weight_gradient.flatten()
             plt.hist(data, bins=100)
-            plt.title(f"Layer {idx} Weight Distribution")
+            plt.title(f"Layer {idx} Weight Gradient Distribution")
             plt.xlabel("Weight Values")
             plt.ylabel("Frequency")
             plt.show() 
