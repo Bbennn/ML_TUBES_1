@@ -161,12 +161,82 @@ class FFNN:
             plt.ylabel("Frequency")
             plt.show() 
     
+    # def show_graph(self):
+    #     G = nx.DiGraph()
+    #     positions = {}
+    #     node_colors = []
+    #     node_list = [] 
+
+    #     for i in range(len(self.layers_sizes)):
+    #         if i == 0:
+    #             prefix = "x"
+    #             color = "white"
+    #         elif i == len(self.layers_sizes) - 1:
+    #             prefix = "y"
+    #             color = "orange"
+    #         else:
+    #             prefix = f"h{i}"
+    #             color = "brown"
+            
+    #         node_name = f"{prefix}({self.layers_sizes[i]})"
+    #         positions[node_name] = (i, 0)
+    #         node_colors.append(color)
+    #         node_list.append(node_name)
+
+    #     edges = [(node_list[i], node_list[i+1]) for i in range(len(node_list)-1)]
+
+    #     G.add_edges_from(edges)
+
+    #     plt.figure(figsize=(3*len(self.layers_sizes), 3))
+
+    #     nx.draw(G, pos=positions, with_labels=True, node_size=3000,
+    #             node_color=node_colors, edge_color="blue",
+    #             font_size=12, font_weight="bold", edgecolors="black")
+
+    #     edge_labels = {}
+    #     matrix_legend = []
+    #     # edge_labels = {edge: f"W_{edge[0]}{edge[1]}" for edge in edges}
+    #     for i in range(len(edges)):
+    #         if i == 0:
+    #             label = f"W_{edges[i][0][:1]}{edges[i][1][:2]}\n"
+    #         elif i == len(edges) - 1:
+    #             label = f"W_{edges[i][0][:2]}{edges[i][1][:1]}\n"
+    #         else:
+    #             label = f"W_{edges[i][0][:2]}{edges[i][1][:2]}\n"
+            
+    #         edge_labels[edges[i]] = label
+    #         matrix_str = np.array2string(self.layers[i].weight, precision=2, separator=', ')    
+    #         matrix_legend.append(f"{label} = {matrix_str}")  
+
+
+    #     nx.draw_networkx_edge_labels(G, pos=positions, edge_labels=edge_labels, font_size=8)
+
+    #     plt.title("Compact Style Graph", fontsize=14)
+    #     # Legend
+    #     plt.subplot(2, 1, 2)  # Bottom subplot for legends
+    #     plt.axis('off')
+
+        
+    #     # Create a single string for all matrix legends
+    #     full_legend_text = "\n\n".join(matrix_legend)
+        
+    #     plt.text(-0.05, 0.5, full_legend_text, 
+    #             fontsize=8, 
+    #             verticalalignment='top', 
+    #             horizontalalignment='left', 
+    #             )
+        
+    #     plt.tight_layout()
+    #     plt.show()
     def show_graph(self):
+
+        # Create directed graph
         G = nx.DiGraph()
         positions = {}
         node_colors = []
-        node_list = [] 
-
+        node_list = []
+        
+        # Create nodes for each layer
         for i in range(len(self.layers_sizes)):
             if i == 0:
                 prefix = "x"
@@ -182,46 +252,83 @@ class FFNN:
             positions[node_name] = (i, 0)
             node_colors.append(color)
             node_list.append(node_name)
-
+        
+        # Create edges between layers
         edges = [(node_list[i], node_list[i+1]) for i in range(len(node_list)-1)]
-
         G.add_edges_from(edges)
-
-        plt.figure(figsize=(3*len(self.layers_sizes), 3))
+        
+        # Create figure with appropriate size
+        plt.figure(figsize=(3*len(self.layers_sizes), 10))  # Increased height to accommodate more legends
+        
+        # Create a subplot for the graph
+        plt.subplot(2, 1, 1)  # Top subplot for the graph
+        
+        # Draw the graph
         nx.draw(G, pos=positions, with_labels=True, node_size=3000,
                 node_color=node_colors, edge_color="blue",
                 font_size=12, font_weight="bold", edgecolors="black")
-
+        
+        # Prepare edge labels and matrix legends
         edge_labels = {}
-        matrix_legend = []
-        # edge_labels = {edge: f"W_{edge[0]}{edge[1]}" for edge in edges}
+        weight_legend = []
+        nabla_weight_legend = []
+        
         for i in range(len(edges)):
             if i == 0:
                 label = f"W_{edges[i][0][:1]}{edges[i][1][:2]}"
+                nabla_label = f"∇W_{edges[i][0][:1]}{edges[i][1][:2]}"
             elif i == len(edges) - 1:
                 label = f"W_{edges[i][0][:2]}{edges[i][1][:1]}"
+                nabla_label = f"∇W_{edges[i][0][:2]}{edges[i][1][:1]}"
             else:
                 label = f"W_{edges[i][0][:2]}{edges[i][1][:2]}"
+                nabla_label = f"∇W_{edges[i][0][:2]}{edges[i][1][:2]}"
             
             edge_labels[edges[i]] = label
-            matrix_str = np.array2string(self.layers[i].weight, precision=2, separator=', ')
-            matrix_legend.append(f"{label} = {matrix_str}")  
-
-
+            
+            # Convert weight matrix to a more readable string
+            matrix_str = np.array2string(self.layers[i].weight, 
+                                        precision=2, 
+                                        separator=', ', 
+                                        suppress_small=True)
+            weight_legend.append(f"{label} = {matrix_str}")
+            
+            # Convert nabla weight matrix to a string
+            nabla_matrix_str = np.array2string(self.layers[i].weight_gradient, 
+                                                precision=2, 
+                                                separator=', ', 
+                                                suppress_small=True)
+            nabla_weight_legend.append(f"{nabla_label} = {nabla_matrix_str}")
+        
+        # Draw edge labels
         nx.draw_networkx_edge_labels(G, pos=positions, edge_labels=edge_labels, font_size=8)
-
-        # Add legend text below the graph
-        y_min = min(y for _, y in positions.values()) - 0.3  # Reduce gap
-        x_offset = 0  # Move closer to the graph
-        line_spacing = 0.2  # Reduce space between legend items
-
-        for i, text in enumerate(matrix_legend):
-            plt.text(x_offset, y_min - (i * line_spacing), text, 
-                     fontsize=10, ha='left', va='top', color='black')
-
+        
         plt.title("Compact Style Graph", fontsize=14)
-        plt.show()
 
+        # Create a subplot for legends
+        plt.subplot(2, 1, 2)  # Bottom subplot for legends
+        plt.axis('off')  # Turn off axis
+        
+        # Combine legends
+        full_legend_text_1 = "Weight Matrices:\n" + "\n\n".join(weight_legend)
+        full_legend_text_2 = "\n\nNabla Weight Matrices:\n" + "\n\n".join(nabla_weight_legend)
+        
+        # Add legends with left alignment
+        plt.text(0.1, 1.4, full_legend_text_1, 
+                fontsize=8, 
+                verticalalignment='top', 
+                horizontalalignment='left', 
+                family='monospace')
+                # transform=plt.gca().transAxes)  # Use axes coordinates
+        plt.text(0.6, 1.4, full_legend_text_2, 
+                fontsize=8, 
+                verticalalignment='top', 
+                horizontalalignment='left', 
+                family='monospace')
+                # transform=plt.gca().transAxes)  # Use axes coordinates
+        
+        plt.tight_layout()
+        plt.show()
     @staticmethod
     def load_model(filename: str) -> "FFNN":
         """Loads the model from a file."""
