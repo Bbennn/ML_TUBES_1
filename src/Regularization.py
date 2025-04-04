@@ -16,10 +16,10 @@ class LNormRegularization(Regularization):
         self.p = p
 
     def before_back_propagation(self, W):
-        self.dR_dW = (1 / self.p) * (np.sum(W**self.p) ** ((1 / self.p) - 1))
+        self.dR_dW = (1 / self.p) * (np.sum(np.abs(W) ** self.p) ** ((1 / self.p) - 1))
 
     def R(self, W):
-        return np.sum(W**self.p) ** (1 / self.p)
+        return np.sum(np.abs(W) ** self.p) ** (1 / self.p)
 
     def dR_dw(self, w):
-        return self.dR_dW * self.p * (w ** (self.p - 1)) * np.sign(w)
+        return self.dR_dW * self.p * (np.abs(w) ** (self.p - 1)) * np.sign(w)
