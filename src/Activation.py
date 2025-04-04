@@ -79,7 +79,7 @@ class SoftmaxActivationFunction(ActivationFunction):
 
 class LeakyActivationFunction(ActivationFunction):
     def fn(N):
-        return np.maximum(N, 0.01 * N)
+        return np.where(N > 0, N, 0.01 * N)    
 
     def do_ds(N):
         return np.where(N > 0, 1, 0.01)
@@ -92,12 +92,14 @@ class SeluActivationFunction(ActivationFunction):
     def fn(N):
         scale = 1.0507
         alpha = 1.67326
-        return np.maximum(scale * N, scale * alpha * (np.exp(N) - 1))
+        safe_N = np.clip(N, a_min=-100, a_max=50) # handle overflow
+        return np.where(N > 0, scale * N, scale * alpha * (np.exp(safe_N) - 1))
 
     def do_ds(N):
         scale = 1.0507
         alpha = 1.67326
-        return np.where(N > 0, scale, scale * alpha * (np.exp(N)))
+        safe_N = np.clip(N, a_min=-100, a_max=50) # handle overflow
+        return np.where(N > 0, scale, scale * alpha * np.exp(safe_N))
 
     def name():
         return "selu"

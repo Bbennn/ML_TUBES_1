@@ -28,7 +28,7 @@ class Layer:
     ):
         self.activation = activation
         self.initializer = initializer
-        self.weight = initializer.init(shape)
+        self.weight = initializer.init(shape).astype(np.float64)
         self.bias = np.zeros(shape[1])
         self.regularizer = regularizer
         self.alpha_regularizer = alpha_regularizer
@@ -37,6 +37,7 @@ class Layer:
         )  # Apply RMSNorm if enabled
 
     def run(self, inputs: np.ndarray) -> np.ndarray:
+        inputs = np.clip(inputs, -1e3, 1e3)
         self.input = inputs
         self.linear_combinations = np.matmul(inputs, self.weight) + self.bias
 
@@ -51,7 +52,6 @@ class Layer:
     def update_gradient(self, delta: np.ndarray, ancestor: "Layer"):
         delta = delta.dot(ancestor.weight.T)
         delta = delta * self.activation.do_ds(self.linear_combinations)
-
         self.weight_gradient = np.dot(self.input.T, delta)
         self.bias_gradient = np.sum(delta, axis=0)
         if self.regularizer != None:
