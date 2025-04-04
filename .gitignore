@@ -1,1 +1,8 @@
 src/__pycache__
+bin
+etc/jupyter
+lib/python3.13/site-packages
+share
+lib64
+pyvenv.cfg
+src/.ipynb_checkpoints

@@ -1,8 +1,10 @@
 import numpy as np
+
+
 class ActivationFunction:
     def fn(X): ...
     def do_ds(nets): ...
-    def name(): ... 
+    def name(): ...
 
 
 class LinearActivationFunction(ActivationFunction):
@@ -11,8 +13,9 @@ class LinearActivationFunction(ActivationFunction):
 
     def do_ds(N):
         return np.ones_like(N)
-    
-    def name(): return "linear"
+
+    def name():
+        return "linear"
 
 
 class ReluActivationFunction(ActivationFunction):
@@ -21,8 +24,9 @@ class ReluActivationFunction(ActivationFunction):
 
     def do_ds(N):
         return np.where(N > 0, 1, 0)
-    
-    def name(): return "relu"
+
+    def name():
+        return "relu"
 
 
 class SigmoidActivationFunction(ActivationFunction):
@@ -33,8 +37,9 @@ class SigmoidActivationFunction(ActivationFunction):
     def do_ds(N):
         O = SigmoidActivationFunction.fn(N)
         return O * (np.ones(O.shape) - O)
-    
-    def name(): return "sigmoid"
+
+    def name():
+        return "sigmoid"
 
 
 class TanhActivationFunction(ActivationFunction):
@@ -43,8 +48,10 @@ class TanhActivationFunction(ActivationFunction):
 
     def do_ds(N):
         return 1 - np.tanh(N) ** 2
-    
-    def name(): return "tanh"
+
+    def name():
+        return "tanh"
+
 
 class SoftmaxActivationFunction(ActivationFunction):
     def fn(N):
@@ -65,30 +72,36 @@ class SoftmaxActivationFunction(ActivationFunction):
             jacobian[i] = np.diagflat(s_i) - np.dot(s_i, s_i.T)
 
         return jacobian
-    
-    def name(): return "softmax"
+
+    def name():
+        return "softmax"
+
 
 class LeakyActivationFunction(ActivationFunction):
     def fn(N):
-        return np.maximum(N, 0.01*N)
+        return np.maximum(N, 0.01 * N)
 
     def do_ds(N):
         return np.where(N > 0, 1, 0.01)
-    
-    def name(): return "leaky"
+
+    def name():
+        return "leaky"
+
 
 class SeluActivationFunction(ActivationFunction):
     def fn(N):
         scale = 1.0507
         alpha = 1.67326
-        return np.maximum(scale*N, scale*alpha*(np.exp(N)-1))
+        return np.maximum(scale * N, scale * alpha * (np.exp(N) - 1))
 
     def do_ds(N):
         scale = 1.0507
         alpha = 1.67326
-        return np.where(N > 0, scale, scale*alpha*(np.exp(N)))
-    
-    def name(): return "selu"
+        return np.where(N > 0, scale, scale * alpha * (np.exp(N)))
+
+    def name():
+        return "selu"
+
 
 ACTIVATION_FUNCTIONS = {
     "linear": LinearActivationFunction,
@@ -100,8 +113,10 @@ ACTIVATION_FUNCTIONS = {
     "selu": SeluActivationFunction,
 }
 
+
 def get_activation(act_name: str):
     name = act_name.lower()
     if name not in ACTIVATION_FUNCTIONS:
         raise ValueError(f"Activation Function `{name}` not available")
     return ACTIVATION_FUNCTIONS[name]
+
